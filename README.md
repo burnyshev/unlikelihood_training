@@ -8,6 +8,12 @@ This repository contains a code for course project of Reinforcement Learning cla
 poetry install
 poetry shell
 ```
+
+load data
+```bash
+wget https://dl.fbaipublicfiles.com/unlikelihood/wikitext-103-bpe_v0.tar.gz
+tar -xzvf wikitext-103-bpe_v0.tar.gz
+```
 ## Scripts
 
 ## Results
