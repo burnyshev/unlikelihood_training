@@ -27,8 +27,8 @@ from collections import defaultdict, Counter
 from tqdm import tqdm, trange
 from pprint import pprint
 
-from apex.parallel import DistributedDataParallel as DDP
-from apex import amp
+# from apex.parallel import DistributedDataParallel as DDP
+# from apex import amp
 
 from fairseq.custom.metrics import TrainingMetrics, Metrics, ngram_metrics
 from fairseq.custom.baseline_cross_entropy import CrossEntropyCriterionWCustomMetrics
@@ -97,7 +97,7 @@ def parse_args():
             'eval-both',
             'eval-singletoken-argmax'],
         default='eval-singletoken')
-    parser.add_argument('--eval-split', choices=['train', 'valid', 'test'])
+    parser.add_argument('--eval-split', choices=['train', 'valid', 'test'], default='valid')
     parser.add_argument(
         '--model-name',
         choices=[
@@ -110,13 +110,13 @@ def parse_args():
     parser.add_argument(
         '--data-base',
         type=str,
-        default='../fairseq/data-bin/wikitext-103-bpe_v0')
-    parser.add_argument('--num-train-epochs', type=int, default=1)
+        default='wikitext-103-bpe_v0')
+    parser.add_argument('--§', type=int, default=1)
     parser.add_argument('--batch-size-singletoken', type=int, default=1024)
     parser.add_argument('--batch-size-completion', type=int, default=1024)
     parser.add_argument(
         '--output-dir',
-        default=None,
+        default='wikitext-103-bpe_v0/model_checkpoints/',
         type=str,
         required=True,
         help="The output directory where the model predictions and checkpoints will be written.")
@@ -138,7 +138,7 @@ def parse_args():
     parser.add_argument('--validate-every', type=int, default=50)
     parser.add_argument('--ul-accum-steps', type=int, default=1)
     parser.add_argument('--pg-accum-steps', type=int, default=1)
-    parser.add_argument('--eval-compl-every', type=int, default=50)
+    parser.add_argument('--eval-compl-every', type=int, default=500)
     parser.add_argument('--compl-steps', type=int, default=float('inf'))
     parser.add_argument('--seq-max-grad-norm', type=int, default=10.0)
     parser.add_argument('--n-samples', type=int, default=1)
@@ -184,6 +184,8 @@ def parse_args():
     parser.add_argument("--max-steps", default=-1, type=int,
                         help="If > 0: set total number of training \
                             steps to perform. Override num_train_epochs.")
+    parser.add_argument("--num-train-epochs", default=1, type=int,
+                        help="Number of training epochs")
     parser.add_argument('--gradient-accumulation-steps', type=int, default=1,
                         help="Number of updates steps to accumulate before\
                             performing a backward/update pass.")
@@ -216,17 +218,17 @@ def main(gpu, nprocs, args):
     random_seed(args.seed)
     print(f'GPU: {gpu}')
     args.gpu = gpu
-    args.rank = args.start_rank + args.gpu
-    print(f'Rank: {args.rank}')
-    dist.init_process_group("nccl",
-                            rank=args.rank,
-                            init_method=args.adress,
-                            world_size=args.world_size)
-    group = dist.group.WORLD
-    args.device = gpu
-    n_gpu = torch.cuda.device_count()
-    logger.info("gpu {}, n_gpu {}".format(gpu, n_gpu))
-    torch.cuda.set_device(gpu)
+#     args.rank = args.start_rank + args.gpu
+#     print(f'Rank: {args.rank}')
+#     dist.init_process_group("nccl",
+#                             rank=args.rank,
+#                             init_method=args.adress,
+#                             world_size=args.world_size)
+#     group = dist.group.WORLD
+#     args.device = gpu
+#     n_gpu = torch.cuda.device_count()
+#     logger.info("gpu {}, n_gpu {}".format(gpu, n_gpu))
+#     torch.cuda.set_device(gpu)
 
     start_iter = 0
 
@@ -241,7 +243,7 @@ def main(gpu, nprocs, args):
         'valid': os.path.join(args.data_base, 'valid_tokens_bpe_gpt2.pt'),
         'test': os.path.join(args.data_base, 'test_tokens_bpe_gpt2.pt'),
     }
-
+    print('load model')
     gpt2 = GPT2LMHeadModel(config).from_pretrained(
         args.model_name, output_hidden_states=True)
     gpt2.config.n_embd = config.n_embd
@@ -272,7 +274,7 @@ def main(gpu, nprocs, args):
                     os.listdir(dir_path)))
             start_iter = max(
                 list(map(lambda x: int(x.split('_')[-1][:-len('.json')]), names)))
-    model.cuda(gpu)
+    model.to(gpu)
 
     if args.mode == 'eval-singletoken-argmax':
         eval_singletoken_argmax(model, args, dataset_paths, config)
@@ -316,14 +318,14 @@ def main(gpu, nprocs, args):
             raise ValueError('token loss is not defined')
 
         datasets = get_datasets(dataset_paths, max_len=args.train_batch_size)
-        if args.world_size > 1:
-            train_sampler = torch.utils.data.distributed.DistributedSampler(
-                datasets['train'],
-                num_replicas=args.world_size,
-                rank=args.rank
-            )
-        else:
-            train_sampler = RandomSampler(datasets['train'])
+#         if args.world_size > 1:
+#             train_sampler = torch.utils.data.distributed.DistributedSampler(
+#                 datasets['train'],
+#                 num_replicas=args.world_size,
+#                 rank=args.rank
+#             )
+#         else:
+        train_sampler = RandomSampler(datasets['train'])
         train_seq_dataloader = DataLoader(
             datasets['train'], sampler=train_sampler, batch_size=1)
 
@@ -339,9 +341,9 @@ def main(gpu, nprocs, args):
             optimizer_grouped_parameters,
             lr=args.learning_rate,
             eps=args.adam_epsilon)
-        model, optimizer = amp.initialize(
-            model, optimizer, opt_level=args.opt_level)
-        model = DDP(model)
+#         model, optimizer = amp.initialize(
+#             model, optimizer, opt_level=args.opt_level)
+#         model = DDP(model)
         model.config = config
         scheduler = get_linear_schedule_with_warmup(
             optimizer,
@@ -575,7 +577,11 @@ def main(gpu, nprocs, args):
 
 if __name__ == '__main__':
     args = parse_args()
-    ngpus_per_node = torch.cuda.device_count()
-    torch.multiprocessing.spawn(
-        main, nprocs=ngpus_per_node, args=(ngpus_per_node, args)
-    )
+#     ngpus_per_node = torch.cuda.device_count()
+    ngpus_per_node = 1
+    print(ngpus_per_node)
+#     print(abc)
+    main(args.device, None, args)
+#     torch.multiprocessing.spawn(
+#         main, nprocs=ngpus_per_node, args=(ngpus_per_node, args)
+#     )

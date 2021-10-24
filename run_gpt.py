@@ -576,6 +576,9 @@ def main(gpu, nprocs, args):
 if __name__ == '__main__':
     args = parse_args()
     ngpus_per_node = torch.cuda.device_count()
+    
+    print(ngpus_per_node)
+    print(abc)
     torch.multiprocessing.spawn(
         main, nprocs=ngpus_per_node, args=(ngpus_per_node, args)
     )
