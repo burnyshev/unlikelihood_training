@@ -66,10 +66,6 @@ def random_seed(value):
     torch.cuda.manual_seed_all(value)
 
 
-def cleanup():
-    dist.destroy_process_group()
-
-
 def parse_args():
     parser = argparse.ArgumentParser()
 
@@ -130,12 +126,12 @@ def parse_args():
     # custom training
     parser.add_argument('--pg-tune-rate', type=float, default=0.0)
     parser.add_argument('--ul-tune-rate', type=float, default=0.0)
-    parser.add_argument('--train-batch-size', type=int, default=300)
-    parser.add_argument('--report-metrics-every', type=int, default=1)
+    parser.add_argument('--train-batch-size', type=int, default=500)
+    parser.add_argument('--report-metrics-every', type=int, default=20)
     parser.add_argument('--save-every', type=int, default=50)
     parser.add_argument('--sequence-ngram-n', type=int, default=4)
-    parser.add_argument('--train-n-steps', type=int, default=5000)
-    parser.add_argument('--validate-every', type=int, default=50)
+    parser.add_argument('--train-n-steps', type=int, default=500)
+    parser.add_argument('--validate-every', type=int, default=100)
     parser.add_argument('--ul-accum-steps', type=int, default=1)
     parser.add_argument('--pg-accum-steps', type=int, default=1)
     parser.add_argument('--eval-compl-every', type=int, default=500)
@@ -514,7 +510,7 @@ def main(gpu, nprocs, args):
                                 np.mean([x['smoothed_nll_loss'] for x in logging_outputs]))
                             logging_average['js_div'] = np.mean(
                                 [x['js_div'] for x in logging_outputs])
-                        print(logging_average)
+                        print(epoch_steps, logging_average)
                         logging_outputs = []
 
                     if total_steps == args.train_n_steps:
@@ -572,7 +568,6 @@ def main(gpu, nprocs, args):
                                         dataset_paths,
                                         config,
                                         train_iter=total_steps)
-    cleanup()
 
 
 if __name__ == '__main__':
