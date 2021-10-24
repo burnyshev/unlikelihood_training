@@ -1,3 +1,4 @@
+# get code from NEURAL TEXT DEGENERATION WITH UNLIKELIHOOD TRAINING paper
 cd ..
 git clone https://github.com/pytorch/fairseq.git
 cd fairseq
@@ -6,5 +7,6 @@ cd ..
 git clone https://github.com/facebookresearch/unlikelihood_training.git
 cp -r unlikelihood_training/custom fairseq/fairseq
 cd unlikelyhood_training
+# load data
 wget https://dl.fbaipublicfiles.com/unlikelihood/wikitext-103-bpe_v0.tar.gz
 tar -xzvf wikitext-103-bpe_v0.tar.gz
