@@ -144,7 +144,7 @@ def sample_sequence(model,
     policy_pis = []
 
     for i in range(continuation_length):
-        logits, past = model(input_ids=prev, past=past)[:2]
+        logits, past = model(input_ids=prev, past_key_values=past)[:2]
         if i == 0 and output_prefix_hidden:
             prefix_hidden = out[2]
 

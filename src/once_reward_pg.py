@@ -6,7 +6,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch import optim
-import torch.distributed as dist
+# import torch.distributed as dist
 import copy
 
 from transformers import *
@@ -70,7 +70,7 @@ class OnceRewardTrainer():
             top_p=self.top_p,
             temperature=self.temperature,
             output_prefix_hidden=output_prefix_hidden,
-            repetition_penalty=args.repetition_penalty)[0]
+            repetition_penalty=self.repetition_penalty)[0]
         torch.cuda.empty_cache()
 
         ntokens = 0
@@ -133,16 +133,16 @@ class OnceRewardTrainer():
         if self.psy_type == 'reward':
             mean = rewards.clone().detach()
             std = rewards.clone().detach() ** 2
-            dist.all_reduce(
-                mean,
-                op=dist.ReduceOp.SUM,
-                group=dist.group.WORLD,
-                async_op=False)
-            dist.all_reduce(
-                std,
-                op=dist.ReduceOp.SUM,
-                group=dist.group.WORLD,
-                async_op=False)
+#             dist.all_reduce(
+#                 mean,
+#                 op=dist.ReduceOp.SUM,
+#                 group=dist.group.WORLD,
+#                 async_op=False)
+#             dist.all_reduce(
+#                 std,
+#                 op=dist.ReduceOp.SUM,
+#                 group=dist.group.WORLD,
+#                 async_op=False)
             mean = mean.mean() / args.world_size
             std = std.sum() ** 0.5
             psy = rewards - mean

@@ -17,6 +17,7 @@ import gc
 import random
 from nltk import ngrams
 import pickle
+import wandb
 
 import numpy as np
 
@@ -130,7 +131,7 @@ def parse_args():
     parser.add_argument('--report-metrics-every', type=int, default=20)
     parser.add_argument('--save-every', type=int, default=50)
     parser.add_argument('--sequence-ngram-n', type=int, default=4)
-    parser.add_argument('--train-n-steps', type=int, default=500)
+    parser.add_argument('--train-n-steps', type=int, default=600)
     parser.add_argument('--validate-every', type=int, default=100)
     parser.add_argument('--ul-accum-steps', type=int, default=1)
     parser.add_argument('--pg-accum-steps', type=int, default=1)
@@ -159,6 +160,7 @@ def parse_args():
         default='once_reward_pg',
         required=False)
     parser.add_argument('--gamma', type=float, default=0.95)
+    parser.add_argument('--focal-gamma', type=float, default=0.95)
     parser.add_argument('--lamda', type=float, default=0.85)
     parser.add_argument('--ppo-epoch', type=int, default=1)
     parser.add_argument('--reward-type', type=str, default='reward_for_past',
@@ -204,6 +206,7 @@ def parse_args():
     parser.add_argument('--alpha-entmax', action='store_true')
 
     parser.add_argument('--num-beams', type=int, default=1)
+    parser.add_argument('--wandb_entity', type=str, default='burnyshev')
 
     args = parser.parse_args()
 
@@ -312,6 +315,11 @@ def main(gpu, nprocs, args):
             token_loss = tldr_loss
         else:
             raise ValueError('token loss is not defined')
+            
+#         wandb.init(project='unlikelihood_training', entity=args.wandb_entity)
+#         wandb.config.update(args)
+#         wandb.run.name = f'mode_{args.mode}__tokenloss_{args.token_loss}__algo_{args.algorithm}__pg_rate_{args.pg_tune_rate}__ul_rate_{args.ul_tune_rate}'
+#         wandb.watch(model)
 
         datasets = get_datasets(dataset_paths, max_len=args.train_batch_size)
 #         if args.world_size > 1:
@@ -478,6 +486,8 @@ def main(gpu, nprocs, args):
                     logging_outputs.append(batch_metrics)
                     optimizer.step()
                     optimizer.zero_grad()
+                
+#                 wandb.log({'training loss': loss})
 
                 if ul_cnt % args.ul_accum_steps == 0 and pg_cnt % args.pg_accum_steps == 0:
                     scheduler.step()
@@ -511,6 +521,7 @@ def main(gpu, nprocs, args):
                             logging_average['js_div'] = np.mean(
                                 [x['js_div'] for x in logging_outputs])
                         print(epoch_steps, logging_average)
+#                         wandb.log(logging_average)
                         logging_outputs = []
 
                     if total_steps == args.train_n_steps:
