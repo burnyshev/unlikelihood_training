@@ -6,7 +6,7 @@ This repository contains a code for course project of Reinforcement Learning cla
 Get custom version of fairseq + load data
 
 ```bash
-bash prepare_fairseq_and_data.sh
+bash bin/prepare_fairseq_and_data.sh
 ```
 comment tensorflow import fairseq/fairseq/custom/evaluation.py:18 if you don't want to have problems with tensorflow!!!
 
@@ -25,12 +25,14 @@ Run training, using:
 5. Token Loss Dynamic Reweighting
 
 ```bash
-bash run_training.sh
+bash bin/run_training.sh
 ```
 #TODO 
 evaluation script
 
 ## Results
+
+All logs of our experiments can be find [here](https://wandb.ai/burnyshev/unlikelihood_training?workspace=user-burnyshev).
 
 #TODO 
 add tables/graphic
