@@ -69,6 +69,10 @@ Run evaluation on finetuned models, using several decoding strategies (top-k and
 ```bash
 bash bin/run_evaluation.sh
 ```
+Get table with metrics of generated texts
+```bash
+python get_result_table.py
+```
 
 ## Results
 All training graphics are recorded [here](https://wandb.ai/burnyshev/unlikelihood_training?workspace=user-burnyshev)
