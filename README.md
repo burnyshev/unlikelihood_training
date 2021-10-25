@@ -27,5 +27,10 @@ Run training, using:
 ```bash
 bash run_training.sh
 ```
+#TODO 
+evaluation script
 
 ## Results
+
+#TODO 
+add tables/graphic
