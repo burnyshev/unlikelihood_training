@@ -131,8 +131,8 @@ def parse_args():
     parser.add_argument('--report-metrics-every', type=int, default=20)
     parser.add_argument('--save-every', type=int, default=50)
     parser.add_argument('--sequence-ngram-n', type=int, default=4)
-    parser.add_argument('--train-n-steps', type=int, default=600)
-    parser.add_argument('--validate-every', type=int, default=100)
+    parser.add_argument('--train-n-steps', type=int, default=1500)
+    parser.add_argument('--validate-every', type=int, default=200)
     parser.add_argument('--ul-accum-steps', type=int, default=1)
     parser.add_argument('--pg-accum-steps', type=int, default=1)
     parser.add_argument('--eval-compl-every', type=int, default=500)
@@ -552,6 +552,9 @@ def main(gpu, nprocs, args):
                             metric = 'js_div'
                         elif args.token_loss == 'tldr':
                             metric = 'ppl'
+                        
+                        wandb.log({f'val_{i}': j for i, j in validation_outputs.items()})
+                        
                         if validation_outputs[metric] < best_ppl and args.rank == args.start_rank:
                             best_ppl = validation_outputs[metric]
                             model_to_save = model.module if hasattr(
