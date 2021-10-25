@@ -2,11 +2,43 @@
 
 This repository contains a code for course project of Reinforcement Learning class at Skoltech. During our project we reimplemented paper [Implicit Unlikelihood Training: Improving Neural Text Generation with Reinforcement Learning](https://arxiv.org/abs/2101.04229) (accepted to EACL 2021)
 
+
+## Table of content 
+
+  - [Repository structure](#repository-structure)
+  - [Setup](#setup)
+  - [Scripts](#scripts)
+  - [Results](#results)
+
+
+## Repository structure
+
+```bash
+.
+├── README.md
+├── bin
+│   ├── prepare_fairseq_and_data.sh
+│   ├── run_evaluation.sh
+│   └── run_training.sh
+├── poetry.lock
+├── pyproject.toml
+└── src
+    ├── alpha_entmax_training.py
+    ├── once_reward_pg.py
+    ├── policy_value.py
+    ├── run_evaluation.py
+    ├── run_gpt2.py
+    ├── time_reward_pg.py
+    ├── tldr.py
+    ├── unlikelihood.py
+    └── utils.py
+```
+
 ## Setup
 Get custom version of fairseq + load data
 
 ```bash
-bash bin/prepare_fairseq_and_data.sh
+bash prepare_fairseq_and_data.sh
 ```
 comment tensorflow import fairseq/fairseq/custom/evaluation.py:18 if you don't want to have problems with tensorflow!!!
 
@@ -25,14 +57,14 @@ Run training, using:
 5. Token Loss Dynamic Reweighting
 
 ```bash
-bash bin/run_training.sh
+bash run_training.sh
 ```
-#TODO 
-evaluation script
+Run evaluation on finetuned models, using several decoding strategies (top-k and top-p strategies)
+```bash
+bash bin/run_evaluation.sh
+```
 
 ## Results
-
-All logs of our experiments can be find [here](https://wandb.ai/burnyshev/unlikelihood_training?workspace=user-burnyshev).
 
 #TODO 
 add tables/graphic
