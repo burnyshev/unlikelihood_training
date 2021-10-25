@@ -316,10 +316,10 @@ def main(gpu, nprocs, args):
         else:
             raise ValueError('token loss is not defined')
             
-#         wandb.init(project='unlikelihood_training', entity=args.wandb_entity)
-#         wandb.config.update(args)
-#         wandb.run.name = f'mode_{args.mode}__tokenloss_{args.token_loss}__algo_{args.algorithm}__pg_rate_{args.pg_tune_rate}__ul_rate_{args.ul_tune_rate}'
-#         wandb.watch(model)
+        wandb.init(project='unlikelihood_training', entity=args.wandb_entity)
+        wandb.config.update(args)
+        wandb.run.name = f'mode_{args.mode}__tokenloss_{args.token_loss}__algo_{args.algorithm}__pg_rate_{args.pg_tune_rate}__ul_rate_{args.ul_tune_rate}'
+        wandb.watch(model)
 
         datasets = get_datasets(dataset_paths, max_len=args.train_batch_size)
 #         if args.world_size > 1:
@@ -487,7 +487,7 @@ def main(gpu, nprocs, args):
                     optimizer.step()
                     optimizer.zero_grad()
                 
-#                 wandb.log({'training loss': loss})
+                wandb.log({'training loss': loss})
 
                 if ul_cnt % args.ul_accum_steps == 0 and pg_cnt % args.pg_accum_steps == 0:
                     scheduler.step()
@@ -521,7 +521,7 @@ def main(gpu, nprocs, args):
                             logging_average['js_div'] = np.mean(
                                 [x['js_div'] for x in logging_outputs])
                         print(epoch_steps, logging_average)
-#                         wandb.log(logging_average)
+                        wandb.log(logging_average)
                         logging_outputs = []
 
                     if total_steps == args.train_n_steps:
