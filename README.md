@@ -22,6 +22,7 @@ This repository contains a code for course project of Reinforcement Learning cla
 │   └── run_training.sh
 ├── poetry.lock
 ├── pyproject.toml
+├── get_result_table.py
 └── src
     ├── alpha_entmax_training.py
     ├── once_reward_pg.py
